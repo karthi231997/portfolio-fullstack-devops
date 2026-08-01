@@ -1,0 +1,223 @@
+name: Pipeline
+
+on:
+  push:
+    branches: [main, master]
+  pull_request:
+
+jobs:
+  checkout:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Upload source
+        uses: actions/upload-artifact@v4
+        with:
+          name: source
+          path: .
+
+  lint:
+    needs: checkout
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download source
+        uses: actions/download-artifact@v4
+        with:
+          name: source
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: ESLint
+        run: pnpm lint
+
+  prettier:
+    needs: lint
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download source
+        uses: actions/download-artifact@v4
+        with:
+          name: source
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Prettier check
+        run: pnpm format:check
+
+  typecheck:
+    needs: prettier
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download source
+        uses: actions/download-artifact@v4
+        with:
+          name: source
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: TypeScript type check
+        run: pnpm typecheck
+
+  unittest:
+    needs: typecheck
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download source
+        uses: actions/download-artifact@v4
+        with:
+          name: source
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Unit tests
+        run: pnpm test
+
+  coverage:
+    needs: unittest
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download source
+        uses: actions/download-artifact@v4
+        with:
+          name: source
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Coverage
+        run: pnpm test:coverage
+
+  sonarcloud:
+    needs: coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
+
+  codeql:
+    needs: sonarcloud
+    runs-on: ubuntu-latest
+    permissions:
+      actions: read
+      contents: read
+      security-events: write
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Initialize CodeQL
+        uses: github/codeql-action/init@v3
+        with:
+          languages: javascript-typescript
+
+      - name: Autobuild
+        uses: github/codeql-action/autobuild@v3
+
+      - name: Perform CodeQL Analysis
+        uses: github/codeql-action/analyze@v3
+
+  gitleaks:
+    needs: codeql
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    needs: gitleaks
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download source
+        uses: actions/download-artifact@v4
+        with:
+          name: source
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 20
+          cache: pnpm
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
+      - name: Build application
+        run: pnpm build
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
+    steps:
+      - name: Deploy placeholder
+        run: echo "Deployment would proceed here after all checks pass"

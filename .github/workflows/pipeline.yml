@@ -75,7 +75,6 @@ jobs:
   sonarcloud:
     needs: coverage
     runs-on: ubuntu-latest
-    if: ${{ secrets.SONAR_TOKEN != '' }}
     steps:
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5

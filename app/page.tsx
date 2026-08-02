@@ -1,4 +1,4 @@
-import Image from "next/image";
+import Image from 'next/image';
 
 export default function Home() {
   return (
@@ -17,13 +17,11 @@ export default function Home() {
             Portfolio • CI/CD Ready
           </p>
           <h1 className="max-w-xl text-3xl font-semibold leading-10 tracking-tight text-black dark:text-zinc-50">
-            Full-stack developer building reliable Next.js products with
-            automated quality gates.
+            Full-stack developer building reliable Next.js products with automated quality gates.
           </h1>
           <p className="max-w-lg text-lg leading-8 text-zinc-600 dark:text-zinc-400">
-            This project demonstrates modern frontend engineering practices,
-            from TypeScript and linting to tests and deployment automation with
-            Next.js.
+            This project demonstrates modern frontend engineering practices, from TypeScript and
+            linting to tests and deployment automation with Next.js.
           </p>
         </div>
         <div className="flex flex-col gap-4 text-base font-medium sm:flex-row">

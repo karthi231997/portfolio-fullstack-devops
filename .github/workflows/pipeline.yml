@@ -1,12 +1,14 @@
 name: Pipeline
 
 on:
+  workflow_dispatch:
   push:
     branches: [main, master]
   pull_request:
 
 jobs:
-  checkout:
+  quality:
+    name: Quality checks
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -14,31 +16,10 @@ jobs:
         with:
           fetch-depth: 0
 
-  setup:
-    needs: checkout
-    runs-on: ubuntu-latest
-    steps:
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
         with:
-          node-version: 22
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Enable pnpm
-        run: corepack enable
-
-      - name: Install pnpm
-        run: corepack prepare pnpm@latest --activate
-
-  install:
-    needs: setup
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
+          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -46,172 +27,28 @@ jobs:
           node-version: 22
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
-
-      - name: Enable pnpm
-        run: corepack enable
-
-      - name: Install pnpm
-        run: corepack prepare pnpm@latest --activate
 
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
-  lint:
-    needs: install
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Enable pnpm
-        run: corepack enable
-
-      - name: Install pnpm
-        run: corepack prepare pnpm@latest --activate
-
       - name: ESLint
         run: pnpm lint
-
-  prettier:
-    needs: lint
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Enable pnpm
-        run: corepack enable
-
-      - name: Install pnpm
-        run: corepack prepare pnpm@latest --activate
 
       - name: Prettier check
         run: pnpm format:check
 
-  typecheck:
-    needs: prettier
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Enable pnpm
-        run: corepack enable
-
-      - name: Install pnpm
-        run: corepack prepare pnpm@latest --activate
-
       - name: TypeScript type check
         run: pnpm typecheck
-
-  unittest:
-    needs: typecheck
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Enable pnpm
-        run: corepack enable
-
-      - name: Install pnpm
-        run: corepack prepare pnpm@latest --activate
 
       - name: Unit tests
         run: pnpm test
 
-  coverage:
-    needs: unittest
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Enable pnpm
-        run: corepack enable
-
-      - name: Install pnpm
-        run: corepack prepare pnpm@latest --activate
-
       - name: Coverage
         run: pnpm test:coverage
 
-  sonarcloud:
-    needs: coverage
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
-        with:
-          fetch-depth: 0
-
-      - name: Setup Node.js
-        uses: actions/setup-node@v4
-        with:
-          node-version: 22
-          cache: pnpm
-          cache-dependency-path: pnpm-lock.yaml
-
-      - name: Enable pnpm
-        run: corepack enable
-
-      - name: Install pnpm
-        run: corepack prepare pnpm@latest --activate
-
-      - name: SonarCloud Scan
-        uses: SonarSource/sonarqube-scan-action@v5
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
-          SONAR_HOST_URL: https://sonarcloud.io
-
-  codeql:
-    needs: sonarcloud
+  security:
+    name: Security checks
+    needs: quality
     runs-on: ubuntu-latest
     permissions:
       actions: read
@@ -220,6 +57,13 @@ jobs:
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -228,11 +72,15 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
-      - name: Enable pnpm
-        run: corepack enable
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
 
-      - name: Install pnpm
-        run: corepack prepare pnpm@latest --activate
+      - name: SonarCloud Scan
+        uses: SonarSource/sonarqube-scan-action@v5
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+          SONAR_TOKEN: ${{ secrets.SONAR_TOKEN }}
+          SONAR_HOST_URL: https://sonarcloud.io
 
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
@@ -245,8 +93,14 @@ jobs:
       - name: Perform CodeQL Analysis
         uses: github/codeql-action/analyze@v3
 
-  gitleaks:
-    needs: codeql
+      - name: Run Gitleaks
+        uses: gitleaks/gitleaks-action@v2
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
+
+  build:
+    name: Build app
+    needs: security
     runs-on: ubuntu-latest
     steps:
       - name: Checkout code
@@ -254,17 +108,10 @@ jobs:
         with:
           fetch-depth: 0
 
-      - name: Run Gitleaks
-        uses: gitleaks/gitleaks-action@v2
-        env:
-          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}
-
-  build:
-    needs: gitleaks
-    runs-on: ubuntu-latest
-    steps:
-      - name: Checkout code
-        uses: actions/checkout@v4
+      - name: Setup pnpm
+        uses: pnpm/action-setup@v4
+        with:
+          version: 10
 
       - name: Setup Node.js
         uses: actions/setup-node@v4
@@ -273,12 +120,6 @@ jobs:
           cache: pnpm
           cache-dependency-path: pnpm-lock.yaml
 
-      - name: Enable pnpm
-        run: corepack enable
-
-      - name: Install pnpm
-        run: corepack prepare pnpm@latest --activate
-
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -286,6 +127,7 @@ jobs:
         run: pnpm build
 
   deploy:
+    name: Deploy
     needs: build
     runs-on: ubuntu-latest
     if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'

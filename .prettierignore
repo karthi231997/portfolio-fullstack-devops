@@ -1,0 +1,11 @@
+node_modules
+.next
+coverage
+pnpm-lock.yaml
+.github/workflows/*.yml
+.github/workflows/*.yaml
+eslint.config.mjs
+next.config.ts
+postcss.config.mjs
+vitest.config.ts
+vitest.setup.ts

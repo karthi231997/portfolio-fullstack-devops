@@ -124,12 +124,3 @@ jobs:
 
       - name: Build application
         run: pnpm build
-
-  deploy:
-    name: Deploy
-    needs: build
-    runs-on: ubuntu-latest
-    if: github.ref == 'refs/heads/main' || github.ref == 'refs/heads/master'
-    steps:
-      - name: Deploy placeholder
-        run: echo "Deployment would proceed here after all checks pass"

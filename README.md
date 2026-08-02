@@ -23,6 +23,50 @@ You can start editing the page by modifying `app/page.tsx`. The page auto-update
 
 This project uses [`next/font`](https://nextjs.org/docs/app/building-your-application/optimizing/fonts) to automatically optimize and load [Geist](https://vercel.com/font), a new font family for Vercel.
 
+## Quality checks and tests
+
+Use these commands to verify the project locally before pushing changes:
+
+```bash
+pnpm install
+pnpm lint
+pnpm lint:fix
+pnpm typecheck
+pnpm format:check
+pnpm format
+pnpm test
+pnpm test:coverage
+```
+
+- Run `pnpm lint` to check for ESLint issues.
+- Run `pnpm lint:fix` to automatically fix safe ESLint problems.
+- Run `pnpm test` to execute the unit test suite.
+- Run `pnpm test:coverage` to run tests and generate a coverage report.
+- Run `pnpm typecheck` to verify TypeScript types without building the app.
+
+If you are using Windows PowerShell and `pnpm` is not recognized, try `pnpm.cmd` instead.
+
+If PowerShell shows an execution policy error such as:
+
+```powershell
+pnpm : File ...\pnpm.ps1 cannot be loaded because running scripts is disabled on this system.
+```
+
+run this once in PowerShell as Administrator:
+
+```powershell
+Set-ExecutionPolicy -Scope CurrentUser RemoteSigned
+```
+
+Then use:
+
+```powershell
+pnpm.cmd install
+pnpm.cmd lint
+pnpm.cmd test
+pnpm.cmd test:coverage
+```
+
 ## Learn More
 
 To learn more about Next.js, take a look at the following resources:

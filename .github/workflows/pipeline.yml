@@ -22,7 +22,7 @@ jobs:
         uses: actions/setup-node@v4
         with:
           node-version: 22
-          cache: pnpm
+          cache: npm
 
       - name: Enable pnpm
         run: corepack enable
@@ -34,6 +34,18 @@ jobs:
     needs: setup
     runs-on: ubuntu-latest
     steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install pnpm
+        run: corepack prepare pnpm@latest --activate
+
       - name: Install dependencies
         run: pnpm install --frozen-lockfile
 
@@ -41,6 +53,18 @@ jobs:
     needs: install
     runs-on: ubuntu-latest
     steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install pnpm
+        run: corepack prepare pnpm@latest --activate
+
       - name: ESLint
         run: pnpm lint
 
@@ -48,6 +72,18 @@ jobs:
     needs: lint
     runs-on: ubuntu-latest
     steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install pnpm
+        run: corepack prepare pnpm@latest --activate
+
       - name: Prettier check
         run: pnpm format:check
 
@@ -55,6 +91,18 @@ jobs:
     needs: prettier
     runs-on: ubuntu-latest
     steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install pnpm
+        run: corepack prepare pnpm@latest --activate
+
       - name: TypeScript type check
         run: pnpm typecheck
 
@@ -62,6 +110,18 @@ jobs:
     needs: typecheck
     runs-on: ubuntu-latest
     steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install pnpm
+        run: corepack prepare pnpm@latest --activate
+
       - name: Unit tests
         run: pnpm test
 
@@ -69,6 +129,18 @@ jobs:
     needs: unittest
     runs-on: ubuntu-latest
     steps:
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install pnpm
+        run: corepack prepare pnpm@latest --activate
+
       - name: Coverage
         run: pnpm test:coverage
 
@@ -76,6 +148,23 @@ jobs:
     needs: coverage
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install pnpm
+        run: corepack prepare pnpm@latest --activate
+
       - name: SonarCloud Scan
         uses: SonarSource/sonarqube-scan-action@v5
         env:
@@ -91,6 +180,21 @@ jobs:
       contents: read
       security-events: write
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install pnpm
+        run: corepack prepare pnpm@latest --activate
+
       - name: Initialize CodeQL
         uses: github/codeql-action/init@v3
         with:
@@ -106,6 +210,11 @@ jobs:
     needs: codeql
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
+
       - name: Run Gitleaks
         uses: gitleaks/gitleaks-action@v2
         env:
@@ -115,6 +224,24 @@ jobs:
     needs: gitleaks
     runs-on: ubuntu-latest
     steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Setup Node.js
+        uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: npm
+
+      - name: Enable pnpm
+        run: corepack enable
+
+      - name: Install pnpm
+        run: corepack prepare pnpm@latest --activate
+
+      - name: Install dependencies
+        run: pnpm install --frozen-lockfile
+
       - name: Build application
         run: pnpm build
 

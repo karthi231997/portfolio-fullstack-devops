@@ -1,4 +1,5 @@
 # portfolio-fullstack-devops
+
 A modern, production-ready portfolio showcasing enterprise frontend development using Next.js, React, TypeScript, Tailwind CSS, automated testing, GitHub Actions CI/CD, Docker, code quality tools, and deployment best practices.
 This is a [Next.js](https://nextjs.org) project bootstrapped with [`create-next-app`](https://nextjs.org/docs/app/api-reference/cli/create-next-app).
 
